@@ -13,7 +13,8 @@
     "nodemon": "^2.0.22",
     "path": "^0.12.7",
     "ts-node-dev": "^2.0.0",
-    "typescript": "^5.0.4"
+    "typescript": "^5.0.4",
+    "zod": "^3.21.4"
   },
   "devDependencies": {
     "@types/cors": "^2.8.13",
