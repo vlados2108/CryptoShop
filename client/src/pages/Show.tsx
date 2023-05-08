@@ -10,6 +10,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import Header from "../components/Header";
 
 export default function Show() {
   const params = useParams();
@@ -18,6 +19,10 @@ export default function Show() {
   // const [name,setName] = useState('')
   useEffect(() => {
     fetchData(params.id!);
+
+    return ()=>{  
+      reset()
+    }
   }, []);
 
   const fetchData = async (id: String) => {
@@ -43,57 +48,80 @@ export default function Show() {
     console.log(dataRes);
   };
 
-  if (Object.entries(coinData).length === 0) return <></>;
+  const reset = ()=>{
+    setGraphData([])
+    setCoinData(Object(undefined))
+  }
+  
 
   return (
     <div>
-      <header>
+      <Header back />
+      {(Object.entries(coinData).length != 0) && <><header className="show-header">
         <img src={coinData.image.large} />
         <h2>
           {coinData.name} ({coinData.symbol})
         </h2>
       </header>
-      <AreaChart
-        width={1000}
-        height={500}
-        data={graphData}
-        margin={{
-          top: 10,
-          right: 30,
-          left: 0,
-          bottom: 0,
-        }}
-      >
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="Date" />
-        <YAxis />
-        <Tooltip />
-        <Area type="monotone" dataKey="Price" stroke="#8884d8" fill="#8884d8" />
-      </AreaChart>
-      <div>
-          <h4>Market cap rank</h4>
-          <span>{coinData.market_cap_rank}</span>
+      <div className="width">
+        <div className="show-graph">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart
+              data={graphData}
+              margin={{
+                top: 10,
+                right: 30,
+                left: 0,
+                bottom: 0,
+              }}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="Date" />
+              <YAxis />
+              <Tooltip />
+              <Area
+                type="monotone"
+                dataKey="Price"
+                stroke="#8884d8"
+                fill="#8884d8"
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
       </div>
-      <div>
-          <h4>24h high</h4>
-          <span>{coinData.market_data.high_24h.usd}</span>
-      </div>
-      <div>
-          <h4>24h low</h4>
-          <span>{coinData.market_data.low_24h.usd}</span>
-      </div>
-      <div>
-          <h4>Circulating supply</h4>
-          <span>{coinData.market_data.circulating_supply}</span>
-      </div>
-      <div>
-          <h4>Current price</h4>
-          <span>{coinData.market_data.current_price.usd}</span>
-      </div>
-      <div>
-          <h4>1y change</h4>
-          <span>{coinData.market_data.price_change_percentage_1y.toFixed(2)}%</span>
-      </div>
+
+      <div className="show-details">
+        <div className="width">
+          <h2>Details</h2>
+          <div className="show-details-row">
+            <h3>Market cap rank</h3>
+            <span>{coinData.market_cap_rank}</span>
+          </div>
+          <div className="show-details-row">
+            <h3>24h high</h3>
+            <span>{coinData.market_data.high_24h.usd}</span>
+          </div>
+          <div className="show-details-row">
+            <h3>24h low</h3>
+            <span>{coinData.market_data.low_24h.usd}</span>
+          </div>
+          <div className="show-details-row">
+            <h3>Circulating supply</h3>
+            <span>{coinData.market_data.circulating_supply}</span>
+          </div>
+          <div className="show-details-row">
+            <h3>Current price</h3>
+            <span>{coinData.market_data.current_price.usd}</span>
+          </div>
+          <div className="show-details-row">
+            <h3>1y change</h3>
+            <span>
+              {coinData.market_data.price_change_percentage_1y.toFixed(2)}%
+            </span>
+          </div>
+        </div>
+      </div></>}
+      
     </div>
   );
 }
