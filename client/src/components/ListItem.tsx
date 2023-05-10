@@ -1,25 +1,26 @@
 import React from "react";
 import { Link } from "react-router-dom";
-
+import s from '../styles/style.module.scss' 
 interface IProps {
   coin: any;
+  userId: number
 }
-export default function ListItems(props: IProps) {
+export default function ListItem(props: IProps) {
   return (
-    <div className="home-crypto">
-      <Link to={`/${props.coin.id}`}>
-        <span className="home-crypto-image">
+    <div className={s.home_crypto}>
+      <Link to={`/${props.userId}/${props.coin.id}`}>
+        <span className={s.home_crypto_image}>
           <img src={props.coin.image} />
         </span>
-        <span className="home-crypto-name">{props.coin.name}</span>
+        <span className={s.home_crypto_name}>{props.coin.name}</span>
         {
           props.coin.priceBtc && 
-          <span className="home-crypto-prices">
-            <span className="home-crypto-btc">
+          <span className={s.home_crypto_prices}>
+            <span className={s.home_crypto_btc}>
               <img src="/bitcoin.webp" />
               {props.coin.priceBtc} BTC
             </span>
-            <span className="home-crypto-usd">{props.coin.priceUsd} USD</span>
+            <span className={s.home_crypto_usd}>{props.coin.priceUsd} USD</span>
           </span>
         }
       </Link>

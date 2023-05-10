@@ -4,9 +4,10 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { trpc, trpcClient } from "./trpc";
 import reportWebVitals from "./reportWebVitals";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import './style.scss'
 import Home from "./pages/Home";
 import Show from "./pages/Show";
+import SignInForm from "./pages/SignInForm";
+import { RegistrationForm } from "./pages/RegistrationForm";
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
@@ -17,8 +18,17 @@ root.render(
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <Routes>
-          <Route index element={<Home />} />
-          <Route path="/:id" element={<Show/>}/>
+          <Route
+            index
+            element={
+              <>
+                <SignInForm />
+                <RegistrationForm />
+              </>
+            }
+          />
+          <Route path="/Home/:userId" element={<Home />} />
+          <Route path="/:userId/:id" element={<Show />} />
         </Routes>
       </BrowserRouter>
     </QueryClientProvider>

@@ -8,6 +8,8 @@ import Header from "../components/Header";
 import ListItems from "../components/ListItem";
 import ListItem from "../components/ListItem";
 import classNames from "classnames";
+import { useParams, useSearchParams } from "react-router-dom";
+import s from '../styles/style.module.scss'
 
 export default function Home() {
   const coinsQ = trpc.CryptoRouter.getTopSevenCoins.useQuery();
@@ -16,7 +18,9 @@ export default function Home() {
   const [coins, setCoins] = useState(coinsQ.data);
   const [searching,setSearching] = useState(false)
   const [searched,setSearched] = useState(false)
+  const params = useParams()
   useEffect(() => { 
+
     setCoins(coinsQ.data);
   }, [coinsQ.data]);
 
@@ -50,13 +54,14 @@ export default function Home() {
   console.log(coins);
   return (
     <div>
-      <Header back={false} />
-      <header className="home-search">
-        <div className="width">
+      <Header back={false} userId={parseInt(params.userId!)} />
+      <header className={s.home_search}>
+        <div className={s.width}>
           <h2>Search for a coin</h2>
-          <div className={classNames("home-search-input",{searching: searching})}>
+          <div className={classNames(`${s.home_search_input}`,{searching: searching})}>
             <input
               type="text"
+              className={s.search}
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value);
@@ -67,15 +72,15 @@ export default function Home() {
           </div>
         </div>
       </header>
-      <div className="home-cryptos">
-        <div className="width">
+      <div className={s.home_cryptos}>
+        <div className={s.width}>
           <h2>{searched? 'Search results' : 'Trending coins'}</h2>
-          <div className="home-cryptos-list">
+          <div className={s.home_cryptos_list}>
             {Array.isArray(coins) &&
               coins?.map((coin: any) => {
                 return (
                   <div key={coin.id}>
-                    <ListItem key={coin.id} coin={coin} />
+                    <ListItem key={coin.id} coin={coin} userId={parseInt(params.userId!)}/>
                   </div>
                 );
               })}
