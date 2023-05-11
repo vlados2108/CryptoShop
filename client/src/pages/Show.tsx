@@ -14,13 +14,16 @@ import {
 import Header from "../components/Header";
 import { Button } from "react-bootstrap";
 import { trpc } from "../trpc";
+import Modal from "../Modal/Modal";
 
 export default function Show() {
   const params = useParams();
   const [graphData, setGraphData] = useState([]);
   const [coinData, setCoinData] = useState(Object(undefined));
-  const [currentPrice,setCurrentPrice] = useState(0)
-  const buyCoinMutation = trpc.AccountRouter.buyCoin.useMutation()
+  const [currentPrice, setCurrentPrice] = useState(0);
+  const [purchaseCount,setPurchaseCount] = useState(1);
+  const [isActiveModal, setIsActiveModal] = useState(false);
+  const buyCoinMutation = trpc.AccountRouter.buyCoin.useMutation();
 
   // const [name,setName] = useState('')
   useEffect(() => {
@@ -32,7 +35,7 @@ export default function Show() {
   }, []);
 
   const fetchData = async (id: String) => {
-    const [graphRes, dataRes,currPrice] = await Promise.all([
+    const [graphRes, dataRes, currPrice] = await Promise.all([
       axios.get(
         `https://api.coingecko.com/api/v3/coins/${id}/market_chart?vs_currency=usd&days=60`
       ),
@@ -41,7 +44,7 @@ export default function Show() {
       ),
       axios.get(
         `https://api.coingecko.com/api/v3/simple/price?ids=${id}&vs_currencies=usd`
-      )
+      ),
     ]);
 
     const graphData = graphRes.data.prices.map((price: [number, number]) => {
@@ -52,18 +55,24 @@ export default function Show() {
         Price: p,
       };
     });
-    console.log(currPrice.data)
-    setCurrentPrice(currPrice.data)
+    console.log(currPrice.data);
+    setCurrentPrice(currPrice.data);
     setGraphData(graphData);
     setCoinData(dataRes.data);
     console.log(dataRes);
   };
 
-  const buyCoin = ()=>{
-    const price = coinData.market_data.current_price.usd
-    if (params.id && typeof(price) === 'number')
-      buyCoinMutation.mutate({userId: parseInt(params.userId!),coinName: params.id ,coinPrice: price,count:1})
-  } 
+  const buyCoin = () => {
+    const price = coinData.market_data.current_price.usd;
+    if (params.id && typeof price === "number")
+      buyCoinMutation.mutate({
+        userId: parseInt(params.userId!),
+        coinName: params.id,
+        coinPrice: price,
+        count: purchaseCount,
+      });
+    setPurchaseCount(1)
+  };
 
   const reset = () => {
     setGraphData([]);
@@ -71,7 +80,7 @@ export default function Show() {
   };
 
   return (
-    <div>
+    <div className={s.container}>
       <Header back userId={parseInt(params.userId!)} />
       {Object.entries(coinData).length != 0 && (
         <>
@@ -140,9 +149,25 @@ export default function Show() {
             </div>
           </div>
 
-          <div className={s.width}>
-           <Button className={s.buyBtn} onClick={buyCoin}>Buy</Button>
+          <div className={s.buyBtnContainer}>
+            <Button className={s.buyBtn} onClick={()=>{setIsActiveModal(true)}}>
+              Buy
+            </Button>
           </div>
+          <Modal active={isActiveModal} setActive={setIsActiveModal}>
+            <div className={s.buyBtnContainer}>
+              <input
+                placeholder="Amount"
+                className={s.numOfCoinsInput}
+                onChange={(e) => {
+                  setPurchaseCount(parseInt(e.target.value));
+                }}
+              ></input>
+              <Button className={s.buyBtn} onClick={buyCoin}>
+                Buy
+              </Button>
+            </div>
+          </Modal>
         </>
       )}
     </div>

@@ -6,8 +6,10 @@ import reportWebVitals from "./reportWebVitals";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Home from "./pages/Home";
 import Show from "./pages/Show";
+
 import SignInForm from "./pages/SignInForm";
 import { RegistrationForm } from "./pages/RegistrationForm";
+import MyCoins from "./pages/MyCoins";
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
@@ -29,6 +31,7 @@ root.render(
           />
           <Route path="/Home/:userId" element={<Home />} />
           <Route path="/:userId/:id" element={<Show />} />
+          <Route path="/:userId/myCoins" element={<MyCoins/>} />
         </Routes>
       </BrowserRouter>
     </QueryClientProvider>

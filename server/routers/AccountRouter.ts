@@ -35,6 +35,11 @@ export const AccountRouter = router({
     const {input} = req
     const res = await accountService.getUserId(input.username,input.password)
     return res
+  }),
+  getUserBalance:publicProcedure.input(z.number()).query(async (req)=>{
+    const {input} = req
+    const res = await accountService.getUserBalance(input)
+    return res
   })
 
 });

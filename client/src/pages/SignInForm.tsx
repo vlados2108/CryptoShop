@@ -18,8 +18,7 @@ export default function SignInForm() {
     }
   };
 
-  if (check.isLoading)
-    return(<>Loading...</>)
+
   return (
     <>
       <div style={{ width: "30%", margin: "0 0 0 400px" }}>

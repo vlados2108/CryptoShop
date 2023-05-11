@@ -4,7 +4,7 @@ const cryptoService = new CryptoService();
 const accountService = new AccountService()
 
 const a = async () => {
-  const result = await accountService.addBalanceToUser(2000,8)
+  const result = await accountService.addBalanceToUser(2000,14)
   console.log(result);
 };
 

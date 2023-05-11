@@ -1,23 +1,31 @@
 import { PrismaClient, User } from "@prisma/client";
 import { UserType } from "../interfaces/Types";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import { secret } from "../config";
 
 const prisma = new PrismaClient();
+
+const generateAccessToken = (id:number) => {
+  const payload = { id };
+  return jwt.sign(payload, secret, { expiresIn: "1h" });
+};
 
 export default class AccountService {
   async createUser(data: UserType) {
     try {
-      
       const temp = await prisma.user.findFirst({
-        where:{username:data.username}
-      })
-      if (!temp){
+        where: { username: data.username },
+      });
+      if (!temp) {
+        const hashPassword = bcrypt.hashSync(data.password, 7)
+        data.password = hashPassword;
         const user = await prisma.user.create({
           data,
         });
         return user;
-      }    
-      else{
-        console.log("User with this username already exists")
+      } else {
+        console.log("User with this username already exists");
       }
     } catch (error) {
       console.error("Failed to create user:", error);
@@ -26,9 +34,27 @@ export default class AccountService {
 
   async checkIfUserExists(name: string, password: string) {
     const user = await prisma.user.findFirst({
-      where: { username: name, password: password },
+      where: { username: name},
     });
-    return user
+    if (!user)
+    {
+      console.log("no user with such login found")
+      return null
+    }
+    const validPassword = bcrypt.compareSync(password, user!.password);
+    if (!validPassword){
+      console.log("not valid password")
+      return null
+    }
+    const token = generateAccessToken(user?.id)
+    return user;
+  }
+
+  async getUserBalance(userId:number){
+    const res = await prisma.user.findFirst({
+      where:{id:userId}
+    })
+    return res!.balance
   }
 
   async addBalanceToUser(money: number, userId: number) {
@@ -42,14 +68,14 @@ export default class AccountService {
     return user;
   }
 
-  async getUserId(name:string,pass:string){
+  async getUserId(name: string, pass: string) {
     const res = await prisma.user.findFirst({
-      where:{
-        username:name,
-        password:pass,
-      }
-    })
-    return res?.id
+      where: {
+        username: name,
+        password: pass,
+      },
+    });
+    return res?.id;
   }
 
   async buyCoin(
@@ -113,7 +139,20 @@ export default class AccountService {
     const res = await prisma.user_Coins.findMany({
       where: { user_id: userId },
     });
-    return res;
+    const coins = await Promise.all(
+      res.map(async (el) => {
+        const coin = await prisma.coin.findFirst({
+          where: {
+            id: el.coin_id,
+          },
+        });
+        return {
+          coinName: coin?.name,
+          count: el.count,
+        };
+      })
+    );
+    return coins;
   }
 
   /*Close db connection*/
