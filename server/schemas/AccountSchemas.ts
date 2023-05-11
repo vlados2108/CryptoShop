@@ -16,3 +16,10 @@ export const buyCoinSchema = z.object({
     coinPrice: z.number(),
     count: z.number(),
 })
+
+export const sellCoinSchema = z.object({
+    coinName: z.string(),
+    userId: z.number(),
+    count: z.number(),
+    coinPrice: z.number()
+})

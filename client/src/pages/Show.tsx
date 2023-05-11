@@ -72,6 +72,7 @@ export default function Show() {
         count: purchaseCount,
       });
     setPurchaseCount(1)
+    setIsActiveModal(false)
   };
 
   const reset = () => {

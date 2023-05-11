@@ -15,6 +15,8 @@ export default function Header(props: IProps) {
   const addBalanceRes = trpc.AccountRouter.addBalanceToUser.useMutation();
   const addBalance = () => {
     addBalanceRes.mutate({ money, userId: props.userId });
+    setMoney(0)
+    setModalActive(false)
   };
 
   return (

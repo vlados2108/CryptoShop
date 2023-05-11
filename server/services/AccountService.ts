@@ -3,10 +3,11 @@ import { UserType } from "../interfaces/Types";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { secret } from "../config";
+import axios from "axios";
 
 const prisma = new PrismaClient();
 
-const generateAccessToken = (id:number) => {
+const generateAccessToken = (id: number) => {
   const payload = { id };
   return jwt.sign(payload, secret, { expiresIn: "1h" });
 };
@@ -18,7 +19,7 @@ export default class AccountService {
         where: { username: data.username },
       });
       if (!temp) {
-        const hashPassword = bcrypt.hashSync(data.password, 7)
+        const hashPassword = bcrypt.hashSync(data.password, 7);
         data.password = hashPassword;
         const user = await prisma.user.create({
           data,
@@ -34,27 +35,26 @@ export default class AccountService {
 
   async checkIfUserExists(name: string, password: string) {
     const user = await prisma.user.findFirst({
-      where: { username: name},
+      where: { username: name },
     });
-    if (!user)
-    {
-      console.log("no user with such login found")
-      return null
+    if (!user) {
+      console.log("no user with such login found");
+      return null;
     }
     const validPassword = bcrypt.compareSync(password, user!.password);
-    if (!validPassword){
-      console.log("not valid password")
-      return null
+    if (!validPassword) {
+      console.log("not valid password");
+      return null;
     }
-    const token = generateAccessToken(user?.id)
+    const token = generateAccessToken(user?.id);
     return user;
   }
 
-  async getUserBalance(userId:number){
+  async getUserBalance(userId: number) {
     const res = await prisma.user.findFirst({
-      where:{id:userId}
-    })
-    return res!.balance
+      where: { id: userId },
+    });
+    return res!.balance;
   }
 
   async addBalanceToUser(money: number, userId: number) {
@@ -146,13 +146,63 @@ export default class AccountService {
             id: el.coin_id,
           },
         });
+        const coinInfo = await axios.get(
+          `https://api.coingecko.com/api/v3/coins/${coin?.name}?localization=false&market_data=true`
+        );
         return {
-          coinName: coin?.name,
+          name: coin?.name,
           count: el.count,
+          image: coinInfo.data.image.large,
+          price: coinInfo.data.market_data.current_price.usd,
         };
       })
     );
     return coins;
+  }
+
+  async sellCoin(
+    coinName: string,
+    userId: number,
+    count: number,
+    coinPrice: number
+  ) {
+    const coin = await prisma.coin.findFirst({
+      where: { name: coinName },
+    });
+
+    const res = await prisma.user_Coins.findUnique({
+      where: {
+        user_id_coin_id: { coin_id: coin!.id, user_id: userId },
+      },
+    });
+
+    if (res!.count > count) {
+      const newCount = res!.count - count;
+      await prisma.user_Coins.update({
+        where: { user_id_coin_id: { coin_id: coin!.id, user_id: userId } },
+        data: { count: newCount },
+      });
+    } else if ((res!.count = count)) {
+      await prisma.user_Coins.delete({
+        where: {
+          user_id_coin_id: { coin_id: coin!.id, user_id: userId },
+        },
+      });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+    });
+    const sum = coinPrice * count;
+    const newBalance = user!.balance + sum;
+    await prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: { balance: newBalance },
+    });
   }
 
   /*Close db connection*/
